@@ -2,7 +2,7 @@
 package org.example;
 
 import org.example.domain.User;
-import org.example.domain.validator.UserValidator;
+import org.example.domain.validators.UserValidator;
 import org.example.repository.InMemoryRepository;
 import org.example.service.UserService;
 import org.example.ui.UserInterface;
@@ -27,7 +27,7 @@ public class Main {
 //        repo.save(u6);
 //        repo.save(u7);
 //
-//        System.out.println("ok");
+//        System.out.println("ok")
 
         InMemoryRepository<Long, User> repository = new InMemoryRepository<>(new UserValidator());
         UserService userService = new UserService(repository);

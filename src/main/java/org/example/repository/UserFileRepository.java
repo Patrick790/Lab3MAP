@@ -1,7 +1,7 @@
 package org.example.repository;
 
 import org.example.domain.User;
-import org.example.domain.validator.Validator;
+import org.example.domain.validators.Validator;
 
 import java.util.List;
 
@@ -25,3 +25,5 @@ public class UserFileRepository extends AbstractFileRepository<Long, User> {
         return entity.getId()+";"+entity.getFirstName()+";"+entity.getLastName();
     }
 }
+
+

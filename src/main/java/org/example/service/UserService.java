@@ -50,17 +50,15 @@ public class UserService implements Service{
      * @return String numele utilizatorului sters
      */
     public Object removeEntity(Long id) {
-        User deletedUser = userRepository.findOne(id);
+        Optional<User> u = userRepository.delete(id);
 
-        if (deletedUser != null) {
-            for (User user : userRepository.findAll()) {
+        if(u.isPresent()){
+            User deletedUser = u.get();
+            for(User user: userRepository.findAll()){
                 user.removeFriend(deletedUser);
             }
-            userRepository.delete(id);
-            return deletedUser;
-        } else {
-            return null;
         }
+        return u.orElse(null);
     }
 
     /**
@@ -78,11 +76,11 @@ public class UserService implements Service{
      * @param id2 id utilizator2
      */
     public void addFriendship(Long id1, Long id2){
-        User user1 = userRepository.findOne(id1);
-        User user2 = userRepository.findOne(id2);
-        if (user1 != null && user2 != null){
-            user1.addFriend(user2);
-            user2.addFriend(user1);
+        Optional<User> user1 = userRepository.findOne(id1);
+        Optional<User> user2 = userRepository.findOne(id2);
+        if (user1.isPresent() && user2.isPresent()){
+            user1.get().addFriend(user2.get());
+            user2.get().addFriend(user1.get());
         }
     }
 
@@ -92,11 +90,11 @@ public class UserService implements Service{
      * @param id2 id utilizator2
      */
     public void removeFriendship(Long id1, Long id2){
-        User user1 = userRepository.findOne(id1);
-        User user2 = userRepository.findOne(id2);
-        if(user1 != null && user2 != null){
-            user1.removeFriend(user2);
-            user2.removeFriend(user1);
+        Optional<User> user1 = userRepository.findOne(id1);
+        Optional<User> user2 = userRepository.findOne(id2);
+        if(user1.isPresent() && user2.isPresent()){
+            user2.get().removeFriend(user1.get());
+            user1.get().removeFriend(user2.get());
         }
     }
 
@@ -113,26 +111,13 @@ public class UserService implements Service{
      * Apeleaza functia mostSociableCommunity si construieste un string cu datele relevante
      * @return String
      */
-    public String getMostSocialCommunity(){
-        StringBuilder stringBuilder = new StringBuilder();
-        ArrayList<Friendship> friendships = getFriendshipList();
-        List<Long> mostSocialCommunity = mostSocialCummunity(friendships);
-
-        for(Long id : mostSocialCommunity){
-            User user = userRepository.findOne(id);
-            if( user != null){
-                stringBuilder.append(user.toString()).append(" ");
-            }
-        }
-        return stringBuilder.toString();
-    }
-
     /**
      * Genereaza instantele de prietenii intre utilizatori
      * @return ArrayList<Friendship> lista de prietenii
      */
     private ArrayList<Friendship> getFriendshipList(){
         ArrayList<Friendship> friendships = new ArrayList<>();
+
 
         for(User user : userRepository.findAll()){
             for( User friend : user.getFriends()){
@@ -150,41 +135,34 @@ public class UserService implements Service{
      * @param friendships ArrayList<Friendship> lista de prietenii
      * @return ArrayList<Long> lista de id a utilizatorilor din comunitate
      */
-    private static List<Long> mostSocialCummunity(ArrayList<Friendship> friendships){
-        Map<Long, ArrayList<Long>> graph = new HashMap<>();
-        createGraph(friendships, graph);
-        ArrayList<Long> largestComponent = new ArrayList<>();
-        ArrayList<Long> currentComponent = new ArrayList<>();
-        Set<Long> visited = new HashSet<>();
-
-        for(Long node : graph.keySet()){
-            if( !visited.contains(node)){
-                currentComponent.clear();
-                dfs(node, visited, graph, true, currentComponent);
-                if(currentComponent.size() > largestComponent.size()){
-                    largestComponent = new ArrayList<>(currentComponent);
-                }
-            }
-        }
-        return largestComponent;
-    }
 
     /**
      * Calculeaza numarul de comunitati
      * @param friendships Lista de prietenii
      * @return int numarul de comunitati
      */
-    private static int noConnectedComponents(ArrayList<Friendship> friendships){
+    private int noConnectedComponents(ArrayList<Friendship> friendships) {
         Map<Long, ArrayList<Long>> graph = new HashMap<>();
         createGraph(friendships, graph);
         Set<Long> visited = new HashSet<>();
         int components = 0;
-        // Perform DFS to count connected components.
-        for( Long node : graph.keySet()){
-            if(!visited.contains(node)){
+
+        // Verifică dacă există noduri izolate (fără prieteni) și le adaugă la numărul de componente
+        Set<Long> isolatedNodes = new HashSet<>();
+        for (User user : userRepository.findAll()) {
+            if (!graph.containsKey(user.getId())) {
+                isolatedNodes.add(user.getId());
+            }
+        }
+
+        components += isolatedNodes.size();
+
+        for (Long node : graph.keySet()) {
+            if (!visited.contains(node)) {
                 components++;
                 dfs(node, visited, graph, false, new ArrayList<>());
             }
+
         }
         return components;
     }
@@ -225,6 +203,55 @@ public class UserService implements Service{
         }
         if (saveComponent)
             currentComponent.add(node);
+    }
+
+
+
+    public String getMostSocialCommunity() {
+        Map<Long, ArrayList<Long>> graph = new HashMap<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        ArrayList<Friendship> friendships = getFriendshipList();
+        createGraph(friendships, graph);
+        List<Long> mostSocialCommunity = findLongestPath(graph);
+
+        for(Long id : mostSocialCommunity){
+            Optional<User> user = userRepository.findOne(id);
+            user.ifPresent(value -> stringBuilder.append(value.toString()).append(" "));
+        }
+        return stringBuilder.toString();
+    }
+
+    private List<Long> findLongestPath(Map<Long, ArrayList<Long>> graph) {
+        List<Long> longestPath = new ArrayList<>();
+        Set<Long> visited = new HashSet<>();
+
+        for (Long node : graph.keySet()) {
+            List<Long> currentPath = new ArrayList<>();
+            dfsForLongestPath(node, visited, graph, currentPath, longestPath);
+
+        }
+
+        return longestPath;
+    }
+
+    private void dfsForLongestPath(Long node, Set<Long> visited, Map<Long, ArrayList<Long>> graph, List<Long> currentPath, List<Long> longestPath) {
+        visited.add(node);
+        currentPath.add(node);
+
+        if (graph.containsKey(node)) {
+            for (Long neighbor : graph.get(node)) {
+                if (!visited.contains(neighbor)) {
+                    dfsForLongestPath(neighbor, visited, graph, currentPath, longestPath);
+                }
+            }
+        }
+
+        if (currentPath.size() > longestPath.size()) {
+            longestPath.clear();
+            longestPath.addAll(currentPath);
+        }
+
+        currentPath.remove(node);
     }
 
 }

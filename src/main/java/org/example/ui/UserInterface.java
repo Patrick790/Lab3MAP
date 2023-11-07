@@ -1,7 +1,7 @@
 package org.example.ui;
 
 import org.example.domain.User;
-import org.example.domain.validator.ValidationException;
+import org.example.domain.validators.ValidationException;
 import org.example.service.UserService;
 
 import java.io.BufferedReader;

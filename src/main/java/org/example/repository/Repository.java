@@ -1,7 +1,15 @@
 package org.example.repository;
 
 import org.example.domain.Entity;
-import org.example.domain.validator.ValidationException;
+import org.example.domain.validators.ValidationException;
+
+import java.util.Optional;
+
+/**
+ * CRUD operations repository interface
+ * @param <ID> - type E must have an attribute of type ID
+ * @param <E> -  type of entities saved in repository
+ */
 
 public interface Repository<ID, E extends Entity<ID>> {
 
@@ -14,7 +22,7 @@ public interface Repository<ID, E extends Entity<ID>> {
      * @throws IllegalArgumentException
      *                  if id is null.
      */
-    E findOne(ID id);
+    Optional<E> findOne(ID id);
 
     /**
      *
@@ -33,7 +41,7 @@ public interface Repository<ID, E extends Entity<ID>> {
      * @throws IllegalArgumentException
      *             if the given entity is null.     *
      */
-    E save(E entity);
+    Optional<E> save(E entity);
 
 
     /**
@@ -44,7 +52,7 @@ public interface Repository<ID, E extends Entity<ID>> {
      * @throws IllegalArgumentException
      *                   if the given id is null.
      */
-    E delete(ID id);
+    Optional<E> delete(ID id);
 
     /**
      *
@@ -57,6 +65,6 @@ public interface Repository<ID, E extends Entity<ID>> {
      * @throws ValidationException
      *             if the entity is not valid.
      */
-    E update(E entity);
+    Optional<E> update(E entity);
 
 }
