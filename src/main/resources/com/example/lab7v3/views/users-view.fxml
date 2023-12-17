@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.lab7v3.controllers.UsersController">
+    <children>
+        <TableView fx:id="userTableView" layoutX="286.0" layoutY="10.0" prefHeight="319.0" prefWidth="300.0">
+            <columns>
+                <TableColumn fx:id="idUser" prefWidth="75.0" text="ID" />
+                <TableColumn fx:id="firstName" prefWidth="75.0" text="First Name" />
+                <TableColumn fx:id="lastName" prefWidth="75.0" text="Last Name" />
+            </columns>
+        </TableView>
+        <Button layoutX="213.0" layoutY="342.0" mnemonicParsing="false" onAction="#onPressDelete" text="Delete" />
+        <Button layoutX="103.0" layoutY="342.0" mnemonicParsing="false" onAction="#onPressUpdate" text="Update" />
+        <Button layoutX="14.0" layoutY="342.0" mnemonicParsing="false" onAction="#onPressAdd" text="Add" />
+        <TextField fx:id="firstNameField" layoutX="14.0" layoutY="14.0" />
+        <TextField fx:id="lastNameField" layoutX="15.0" layoutY="47.0" />
+        <Label layoutX="199.0" layoutY="18.0" text="First Name" />
+        <Label layoutX="189.0" layoutY="51.0" text="Last Name" />
+        <Button fx:id="prevButton" layoutX="286.0" layoutY="342.0" mnemonicParsing="false" onAction="#onPressPrev" text="Previous" />
+        <Button fx:id="nextButton" layoutX="534.0" layoutY="342.0" mnemonicParsing="false" onAction="#onPressNext" text="Next" />
+    </children>
+</AnchorPane>
